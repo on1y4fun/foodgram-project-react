@@ -8,9 +8,8 @@ from recipes.models import (
     RecipeShopping,
     RecipeIngredient,
     RecipeTag,
-    Follow,
 )
-
+from users.models import User, Follow
 
 class IngredientInline(admin.TabularInline):
     model = RecipeIngredient
@@ -30,7 +29,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'author',
         'name',
         'image',
-        'description',
+        'text',
         'cooking_time',
     )
     search_fields = ('name',)
