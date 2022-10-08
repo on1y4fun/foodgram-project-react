@@ -5,11 +5,10 @@ from recipes.models import (
     Recipe,
     Tag,
     ShoppingList,
-    RecipeShopping,
     RecipeIngredient,
     RecipeTag,
+    Favorite
 )
-from users.models import User, Follow
 
 class IngredientInline(admin.TabularInline):
     model = RecipeIngredient
@@ -17,10 +16,6 @@ class IngredientInline(admin.TabularInline):
 
 class TagInline(admin.TabularInline):
     model = RecipeTag
-
-
-class ShoppingInline(admin.TabularInline):
-    model = RecipeShopping
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -45,15 +40,27 @@ class ShoppingAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'user',
+        'recipe',
     )
     search_fields = ('user',)
     list_filter = ('user',)
     empty_value_display = '-пусто-'
-    inlines = (ShoppingInline,)
+
+
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'user',
+        'recipe',
+    )
+    search_fields = ('user',)
+    list_filter = ('user',)
+    empty_value_display = '-пусто-'
 
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient)
 admin.site.register(Tag)
 admin.site.register(ShoppingList, ShoppingAdmin)
-admin.site.register(Follow)
+admin.site.register(Favorite, FavoriteAdmin)
+

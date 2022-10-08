@@ -1,7 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import UserManager
-from django.db.models import Q
 
 from foodgram.settings import USER, ADMIN
 
@@ -73,6 +71,11 @@ class Follow(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'author'), name='follow_model'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} {self.author}'
