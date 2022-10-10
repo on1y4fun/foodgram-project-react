@@ -12,7 +12,7 @@ router_v1 = SimpleRouter()
 router_v1.register(r'recipes', RecipeViewSet, basename='recipes')
 router_v1.register(r'tags', TagViewSet, basename='tags')
 router_v1.register(r'ingredients', IngredientViewSet, basename='ingredients')
-router_v1.register(r'users/subscribtions', FollowViewSet, basename='following')
+router_v1.register(r'users/subscriptions', FollowViewSet, basename='following')
 router_v1.register(r'users', UserViewSet, basename='users')
 
 urlpatterns = [

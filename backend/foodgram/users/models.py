@@ -12,16 +12,28 @@ CHOICES = (
 
 class User(AbstractUser):
     username = models.CharField(
-        max_length=128,
+        max_length=150,
         unique=True,
         verbose_name='Логин',
-        help_text='Введите имя пользователя',
+        help_text='Введите логин',
     )
     email = models.EmailField(
         max_length=256,
         unique=True,
         verbose_name='Электронная почта',
         help_text='Введите электронную почту',
+    )
+    first_name = models.CharField(
+        max_length=150,
+        unique=False,
+        verbose_name='Имя',
+        help_text='Введите имя',
+    )
+    last_name = models.CharField(
+        max_length=150,
+        unique=False,
+        verbose_name='Фамилия',
+        help_text='Введите фамилию',
     )
     bio = models.TextField(
         blank=True,

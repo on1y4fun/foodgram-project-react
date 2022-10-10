@@ -1,8 +1,10 @@
 import base64
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SkipField
+from rest_framework.fields import get_error_detail, SkipField
 from rest_framework.validators import UniqueTogetherValidator
 
 from django.core.files.base import ContentFile
@@ -19,6 +21,7 @@ from users.models import Follow, User
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
@@ -27,7 +30,12 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
+            'password'
         )
+
+    def create(self, validated_data):
+        validated_data['password'] = make_password(validated_data['password'])
+        return super(UserSerializer, self).create(validated_data)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -90,25 +98,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         source='get_is_in_shopping_cart', default=False
     )
 
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'tags',
-            'author',
-            'ingredients',
-            'name',
-            'image',
-            'text',
-            'cooking_time',
-            'is_favorited',
-            'is_in_shopping_cart',
-        )
-
     def to_internal_value(self, data):
         fields = self._writable_fields
         tags = []
         out_data = {}
+        errors = {}
+        for tag in data['tags']:
+            tags.append(
+                TagSerializer(Tag.objects.filter(id=tag), many=True).data[0]
+            )
+        data['tags'] = tags
         for field in fields:
             validate_method = getattr(
                 self, 'validate_' + field.field_name, None
@@ -118,14 +117,18 @@ class RecipeSerializer(serializers.ModelSerializer):
                 validated_value = field.run_validation(primitive_value)
                 if validate_method is not None:
                     validated_value = validate_method(validated_value)
-            except ValidationError:
+            except ValidationError as exc:
+                if not field.field_name == 'tags':
+                    errors[field.field_name] = exc
                 pass
+            except DjangoValidationError as exc:
+                errors[field.field_name] = get_error_detail(exc)
+            except SkipField:
+                pass   
             else:
                 out_data[field.source_attrs[0]] = validated_value
-        for tag in data['tags']:
-            tags.append(
-                TagSerializer(Tag.objects.filter(id=tag), many=True).data[0]
-            )
+        if errors:
+            raise ValidationError(errors)
         out_data['tags'] = tags
         out_data['ingredients'] = data['ingredients']
         return out_data
@@ -190,6 +193,21 @@ class RecipeSerializer(serializers.ModelSerializer):
         except KeyError:
             return False
         return recipe.shopping.filter(user=user, recipe=recipe).exists()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'name',
+            'image',
+            'text',
+            'cooking_time',
+            'is_favorited',
+            'is_in_shopping_cart',
+        )
 
 
 class FollowSerializer(serializers.ModelSerializer):
