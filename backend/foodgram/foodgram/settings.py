@@ -10,7 +10,7 @@ DEBUG = True
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(BASE_DIR), 'infra/.env'))
 
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = ['127.0.0.1', '178.154.224.147']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
