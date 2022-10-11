@@ -15,7 +15,7 @@
 git clone https://github.com/on1y4fun/foodgram-project-react.git
 
 ```
-# Запуск бэкенда:
+### Запуск бэкенда:
 
 ```
 cd backend/
@@ -56,7 +56,7 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
-# Запуск фронтенда:
+### Запуск фронтенда:
 
 ```
 cd frontend/
