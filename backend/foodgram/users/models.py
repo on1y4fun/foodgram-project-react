@@ -1,18 +1,17 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
-
-from foodgram.settings import USER, ADMIN
-
+from django.db import models
+from foodgram.settings import ADMIN, USER
 
 CHOICES = (
     (USER, 'Пользователь'),
     (ADMIN, 'Администратор'),
 )
 
+NAMING_LENGTH = 150
 
 class User(AbstractUser):
     username = models.CharField(
-        max_length=150,
+        max_length=NAMING_LENGTH,
         unique=True,
         verbose_name='Логин',
         help_text='Введите логин',
@@ -24,13 +23,13 @@ class User(AbstractUser):
         help_text='Введите электронную почту',
     )
     first_name = models.CharField(
-        max_length=150,
+        max_length=NAMING_LENGTH,
         unique=False,
         verbose_name='Имя',
         help_text='Введите имя',
     )
     last_name = models.CharField(
-        max_length=150,
+        max_length=NAMING_LENGTH,
         unique=False,
         verbose_name='Фамилия',
         help_text='Введите фамилию',

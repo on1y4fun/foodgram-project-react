@@ -2,19 +2,20 @@ from django.db import models
 
 from users.models import User
 
+NAMING_LENGTH = 200
 
 class Tag(models.Model):
     name = models.CharField(
-        max_length=200,
+        max_length=NAMING_LENGTH,
         verbose_name='Название тега',
         help_text='Введите название тега',
-        unique=True
+        unique=True,
     )
     color = models.CharField(
         max_length=7, verbose_name='Цвет тега', help_text='Выберите цвет тега'
     )
     slug = models.SlugField(
-        max_length=200,
+        max_length=NAMING_LENGTH,
         unique=True,
         verbose_name='Слаг-название тега',
         help_text='Введите слаг-название',
@@ -31,13 +32,13 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(
-        max_length=200,
+        max_length=NAMING_LENGTH,
         verbose_name='Название ингредиента',
         help_text='Введите название ингредиента',
-        unique=True
+        unique=True,
     )
     unit = models.CharField(
-        max_length=200,
+        max_length=NAMING_LENGTH,
         verbose_name='Единица измерения',
         help_text='Введите единицу измерения',
     )
@@ -74,7 +75,7 @@ class Recipe(models.Model):
         help_text='Выберите ингредиенты',
     )
     name = models.CharField(
-        max_length=200,
+        max_length=NAMING_LENGTH,
         verbose_name='Название рецепта',
         help_text='Введите название рецепта',
     )
@@ -105,7 +106,10 @@ class Recipe(models.Model):
         ordering = ('-pub_date',)
         constraints = (
             models.UniqueConstraint(
-                fields=('author', 'name',),
+                fields=(
+                    'author',
+                    'name',
+                ),
                 name='unique_name',
             ),
         )

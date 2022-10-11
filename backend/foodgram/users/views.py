@@ -1,16 +1,17 @@
-from rest_framework import viewsets, status, permissions, serializers
-from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.response import Response
 
+from api.permissions import CreateUserOrAuthenticated
 from api.serializers import (
     FollowSerializer,
-    UserSerializer,
     UserPasswordSerializer,
+    UserSerializer,
 )
 from users.models import Follow, User
-from api.permissions import CreateUserOrAuthenticated
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -26,7 +27,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def subscribe(self, request, pk):
         user = request.user
-        author = User.objects.get(id=pk)
+        author = get_object_or_404(User, id=pk)
         if not request.method == 'DELETE':
             if user.follower.filter(author=author).exists():
                 return Response(
@@ -77,4 +78,3 @@ class FollowViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Follow.objects.filter(user=user)
-

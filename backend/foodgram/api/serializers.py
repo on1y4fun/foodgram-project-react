@@ -1,27 +1,20 @@
 import base64
+
 from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError as DjangoValidationError
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import get_error_detail, SkipField
-from rest_framework.validators import UniqueTogetherValidator
-
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.fields import SkipField, get_error_detail
 
-from recipes.models import (
-    Ingredient,
-    Recipe,
-    RecipeTag,
-    RecipeIngredient,
-    Tag,
-)
+from recipes.models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
 from users.models import Follow, User
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
@@ -30,7 +23,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            'password'
+            'password',
         )
 
     def create(self, validated_data):
@@ -124,7 +117,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             except DjangoValidationError as exc:
                 errors[field.field_name] = get_error_detail(exc)
             except SkipField:
-                pass   
+                pass
             else:
                 out_data[field.source_attrs[0]] = validated_value
         if errors:
@@ -148,12 +141,12 @@ class RecipeSerializer(serializers.ModelSerializer):
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
             amount = ingredient['amount']
-            current_ingredient = Ingredient.objects.get(id=ingredient['id'])
+            current_ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
             RecipeIngredient.objects.create(
                 ingredient=current_ingredient, recipe=recipe, amount=amount
             )
         for tag in tags:
-            current_tag = Tag.objects.get(id=tag['id'])
+            current_tag = get_object_or_404(Tag, id=tag['id'])
             RecipeTag.objects.create(tag=current_tag, recipe=recipe)
         return recipe
 
@@ -262,4 +255,7 @@ class UserPasswordSerializer(serializers.Serializer):
         return data
 
     class Meta:
-        fields = ('new_password', 'current_password',)
+        fields = (
+            'new_password',
+            'current_password',
+        )
