@@ -76,6 +76,6 @@ npm run start
 
 ## Автор бэкенд части
 
-[Максим Чен](https://github.com/on1y4fun) - категории (Categories), жанры (Genres) и произведения (Titles): модели, view и эндпойнты для них.
+[Максим Чен](https://github.com/on1y4fun)
 
 ### Лицензия [MIT](https://opensource.org/licenses/MIT)
