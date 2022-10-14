@@ -7,7 +7,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from api.filters import FavoriteShoppingFilter
+from api.filters import FavoriteShoppingFilter, IngredientFilter
 from api.permissions import AuthorOrAuthenticated
 from api.serializers import (
     FavoriteOrShoppingSerializer,
@@ -89,11 +89,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'ingredient_id', 'amount'
             )
             for object in objects:
-                ingredient = get_object_or_404(Ingredient, id=object['ingredient_id'])
+                ingredient = get_object_or_404(
+                    Ingredient, id=object['ingredient_id']
+                )
                 if ingredient.name not in shopping_list:
                     shopping_list[ingredient.name] = [
                         object['amount'],
-                        ingredient.mesurement_unit,
+                        ingredient.measurement_unit,
                     ]
                 else:
                     shopping_list[ingredient.name][0] += object['amount']
@@ -109,6 +111,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
         DjangoFilterBackend,
         filters.SearchFilter,
     )
+    filterset_class = IngredientFilter
     filterset_fields = ('name',)
     search_fields = ('^name',)
 

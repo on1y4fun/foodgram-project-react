@@ -1,19 +1,19 @@
 import django_filters
 
-from recipes.models import Recipe
+from recipes.models import Ingredient, Recipe, Tag
 
 
 class FavoriteShoppingFilter(django_filters.FilterSet):
-    is_favorited = django_filters.NumberFilter(
-        method='filter_is_favorited'
-    )
+    is_favorited = django_filters.NumberFilter(method='filter_is_favorited')
     is_in_shopping_cart = django_filters.NumberFilter(
         method='filter_is_in_shopping_cart'
     )
-    tags = django_filters.CharFilter(method='filter_tags')
-    author = django_filters.NumberFilter(
-        method='filter_author'
+    tags = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
+        to_field_name='slug',
+        method='filter_tags',
     )
+    author = django_filters.NumberFilter(method='filter_author')
 
     def _filter(self, queryset, field, value, filtered):
         if value:
@@ -31,7 +31,9 @@ class FavoriteShoppingFilter(django_filters.FilterSet):
         return self._filter(queryset, field, value, filtered)
 
     def filter_tags(self, queryset, field, value):
-        filtered = queryset.filter(tags__name=value)
+        filtered = queryset
+        for tag in value:
+            filtered = filtered.filter(tags=tag)
         return self._filter(queryset, field, value, filtered)
 
     def filter_author(self, queryset, field, value):
@@ -40,9 +42,14 @@ class FavoriteShoppingFilter(django_filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = (
-            'is_favorited',
-            'is_in_shopping_cart',
-            'tags',
-            'author'
-        )
+        fields = ('is_favorited', 'is_in_shopping_cart', 'tags', 'author')
+
+
+class IngredientFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        field_name='name', lookup_expr='icontains'
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)

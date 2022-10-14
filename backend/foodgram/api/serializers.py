@@ -52,7 +52,7 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
-            'mesurement_unit',
+            'measurement_unit',
         )
 
     def serialize_ingredient(self, ingredient):

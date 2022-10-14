@@ -1,3 +1,7 @@
+Для ревью:
+
+
+
 # Проект Foodgram
 
 Сайт Foodgram — база рецептов.
@@ -15,63 +19,35 @@
 git clone https://github.com/on1y4fun/foodgram-project-react.git
 
 ```
-### Запуск бэкенда:
+Запуск приложения в контейнерах:
 
 ```
-cd backend/
+cd infra/
+```
+```
+docker-compose up -d --build
 ```
 
-Создать и активировать виртуальное окружение:
+Выполняем миграции:
 
 ```
-python3 -m venv env
+docker-compose exec web python manage.py migrate
 ```
 
-```
-source env/bin/activate
-```
-
-Установить зависимости из файла requirements.txt:
+Создаем суперпользователя:
 
 ```
-python3 -m pip install --upgrade pip
+docker-compose exec web python manage.py createsuperuser
 ```
+Собираем статику:
 
 ```
-pip install -r requirements.txt
+docker-compose exec web python manage.py collectstatic --no-input
 ```
-
-Выполнить миграции:
-
-```
-cd foodgram/
-```
-```
-python3 manage.py migrate
-```
-
-Запустить проект:
+Команда на заполнение базы данных ингредиентами:
 
 ```
-python3 manage.py runserver
-```
-
-### Запуск фронтенда:
-
-```
-cd frontend/
-```
-
-Установить зависимости:
-
-```
-npm i 
-```
-
-Запустить проект:
-
-```
-npm run start 
+docker-compose exec web python manage.py ingredients_to_postgres
 ```
 
 ## Автор бэкенд части

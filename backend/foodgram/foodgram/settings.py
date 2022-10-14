@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DEBUG = True
+DEBUG = False
 
 load_dotenv(
     dotenv_path=os.path.join(
@@ -12,7 +12,7 @@ load_dotenv(
 )
 SECRET_KEY = os.getenv('SECRET_KEY', default='^(o9q205e*=ah&q&1xtgd)')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['178.154.224.147', 'web',]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -80,12 +80,14 @@ WSGI_APPLICATION = 'foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'ENGINE': os.getenv(
+            'DB_ENGINE', default='django.db.backends.postgresql'
+        ),
         'NAME': os.getenv('DB_NAME', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
         'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+        'PORT': os.getenv('DB_PORT', default='5432'),
     }
 }
 
