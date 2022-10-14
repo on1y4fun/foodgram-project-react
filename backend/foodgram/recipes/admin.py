@@ -13,6 +13,7 @@ from recipes.models import (
 
 class IngredientInline(admin.TabularInline):
     model = RecipeIngredient
+    min_num = 1
 
 
 class TagInline(admin.TabularInline):

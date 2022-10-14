@@ -13,22 +13,21 @@ class AuthorOrAuthenticated(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS or request.user.is_admin:
-            return True
-        if request.method not in self.author_methods:
-            return False
-        if not obj.author == request.user:
-            return False
-        return True
+        return (
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_admin
+            or (
+                request.method in self.author_methods
+                and obj.author == request.user
+            )
+        )
 
 
 class CreateUserOrAuthenticated(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        if request.user.is_admin:
-            return True
-        return False
+        return (
+            request.method in permissions.SAFE_METHODS or request.user.is_admin
+        )
 
 
 class ReadOnly(permissions.BasePermission):

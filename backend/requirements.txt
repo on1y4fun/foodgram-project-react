@@ -11,3 +11,5 @@ djoser
 djangorestframework-simplejwt==4.7.2
 django-filter
 gunicorn==20.0.4
+asgiref==3.2.10
+PyJWT==2.1.0

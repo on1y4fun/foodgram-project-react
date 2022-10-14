@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from api.filters import FavoriteShoppingFilter
@@ -20,6 +21,7 @@ from recipes.models import Favorite, Ingredient, Recipe, ShoppingList, Tag
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    parser_classes = (MultiPartParser, JSONParser)
     pagination_class = PageNumberPagination
     permission_classes = (AuthorOrAuthenticated,)
     filterset_class = FavoriteShoppingFilter

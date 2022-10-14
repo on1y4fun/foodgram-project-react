@@ -1,20 +1,20 @@
 import base64
 
 from django.contrib.auth.hashers import make_password
-from django.core.exceptions import ValidationError
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import SkipField, get_error_detail
 
 from recipes.models import Ingredient, Recipe, RecipeIngredient, RecipeTag, Tag
 from users.models import Follow, User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(
+        source='get_is_subscribed'
+    )
+
     class Meta:
         model = User
         fields = (
@@ -24,7 +24,22 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'password',
+            'is_subscribed',
         )
+
+    def get_is_subscribed(self, instance):
+        try:
+            user = self.context['request'].user
+        except KeyError:
+            return None
+        if user.is_authenticated:
+            return user.follower.filter(author=instance).exists()
+        return None
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data.pop('password')
+        return data
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
@@ -80,10 +95,12 @@ class Base64ImageField(serializers.ImageField):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, required=True)
+    tags = serializers.SerializerMethodField(source='get_tags')
     author = UserSerializer(required=False, read_only=True)
     ingredients = serializers.SerializerMethodField(source='get_ingredients')
-    image = Base64ImageField(required=True)
+    image = Base64ImageField(
+        required=True,
+    )
     is_favorited = serializers.SerializerMethodField(
         source='get_is_favorite', default=False
     )
@@ -92,39 +109,15 @@ class RecipeSerializer(serializers.ModelSerializer):
     )
 
     def to_internal_value(self, data):
-        fields = self._writable_fields
+        input_data = super(RecipeSerializer, self).to_internal_value(data)
         tags = []
-        out_data = {}
-        errors = {}
         for tag in data['tags']:
             tags.append(
                 TagSerializer(Tag.objects.filter(id=tag), many=True).data[0]
             )
-        data['tags'] = tags
-        for field in fields:
-            validate_method = getattr(
-                self, 'validate_' + field.field_name, None
-            )
-            primitive_value = field.get_value(data)
-            try:
-                validated_value = field.run_validation(primitive_value)
-                if validate_method is not None:
-                    validated_value = validate_method(validated_value)
-            except ValidationError as exc:
-                if not field.field_name == 'tags':
-                    errors[field.field_name] = exc
-                pass
-            except DjangoValidationError as exc:
-                errors[field.field_name] = get_error_detail(exc)
-            except SkipField:
-                pass
-            else:
-                out_data[field.source_attrs[0]] = validated_value
-        if errors:
-            raise ValidationError(errors)
-        out_data['tags'] = tags
-        out_data['ingredients'] = data['ingredients']
-        return out_data
+        input_data['tags'] = tags
+        input_data['ingredients'] = data['ingredients']
+        return input_data
 
     def get_ingredients(self, recipe):
         return IngredientSerializer(
@@ -133,21 +126,35 @@ class RecipeSerializer(serializers.ModelSerializer):
             many=True,
         ).data
 
+    def get_tags(self, recipe):
+        tags = []
+        for tag in recipe.tags.all():
+            tags.append(TagSerializer(tag).data)
+        return tags
+
     def create(self, validated_data):
         request = self.context.get('request', None)
         validated_data['author'] = request.user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
+        recipe_ingredients = []
+        recipe_tags = []
         for ingredient in ingredients:
             amount = ingredient['amount']
-            current_ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
-            RecipeIngredient.objects.create(
-                ingredient=current_ingredient, recipe=recipe, amount=amount
+            current_ingredient = get_object_or_404(
+                Ingredient, id=ingredient['id']
             )
+            recipe_ingredients.append(
+                RecipeIngredient(
+                    ingredient=current_ingredient, recipe=recipe, amount=amount
+                )
+            )
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
         for tag in tags:
             current_tag = get_object_or_404(Tag, id=tag['id'])
-            RecipeTag.objects.create(tag=current_tag, recipe=recipe)
+            recipe_tags.append(RecipeTag(tag=current_tag, recipe=recipe))
+        RecipeTag.objects.bulk_create(recipe_tags)
         return recipe
 
     def update(self, instance, validated_data):
@@ -182,9 +189,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         try:
             user = self.context['request'].user
             if user.is_anonymous:
-                return False
+                return None
         except KeyError:
-            return False
+            return None
         return recipe.shopping.filter(user=user, recipe=recipe).exists()
 
     class Meta:

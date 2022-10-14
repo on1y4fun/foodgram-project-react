@@ -1,8 +1,10 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from users.models import User
 
 NAMING_LENGTH = 200
+
 
 class Tag(models.Model):
     name = models.CharField(
@@ -93,6 +95,9 @@ class Recipe(models.Model):
         help_text='Опишите рецепт',
     )
     cooking_time = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+        ],
         verbose_name='Время приготовления, мин',
         help_text='Введите время в минутах',
     )
@@ -189,7 +194,12 @@ class RecipeIngredient(models.Model):
         null=True,
         verbose_name='Ингредиенты',
     )
-    amount = models.PositiveIntegerField(null=True, verbose_name='Количество')
+    amount = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+        ],
+        verbose_name='Количество',
+    )
 
     class Meta:
         constraints = [
