@@ -24,7 +24,7 @@ class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'pk',
         'name',
-        'unit',
+        'measurement_unit',
     )
     search_fields = ('name',)
     list_filter = ('name',)

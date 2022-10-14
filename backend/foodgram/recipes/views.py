@@ -93,7 +93,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 if ingredient.name not in shopping_list:
                     shopping_list[ingredient.name] = [
                         object['amount'],
-                        ingredient.unit,
+                        ingredient.mesurement_unit,
                     ]
                 else:
                     shopping_list[ingredient.name][0] += object['amount']
